@@ -1,298 +1,559 @@
-# Adaptive NPC Framework - Complete User Manual
+# Adaptive NPC - Complete Developer Manual
+
+**Version:** 1.0.1  
+**Last Updated:** January 2025  
+**Reading Time:** 10 minutes
+
+---
 
 ## Table of Contents
-1. [What is Adaptive NPC?](#what-is-adaptive-npc)
-2. [System Requirements](#system-requirements)
-3. [Installation Guide](#installation-guide)
-4. [Running Your First Demo](#running-your-first-demo)
-5. [Understanding the Framework](#understanding-the-framework)
-6. [Setting Up OpenAI (Optional)](#setting-up-openai-optional)
-7. [Troubleshooting](#troubleshooting)
+
+1. [Welcome](#welcome)
+2. [What is Adaptive NPC?](#what-is-adaptive-npc)
+3. [Installation Walkthrough](#installation-walkthrough)
+4. [Your First NPC in 5 Minutes](#your-first-npc-in-5-minutes)
+5. [How It Works](#how-it-works)
+6. [Testing & Verification](#testing--verification)
+7. [Architecture Overview](#architecture-overview)
+8. [Common Integration Patterns](#common-integration-patterns)
+9. [Performance & Optimization](#performance--optimization)
+10. [Troubleshooting Guide](#troubleshooting-guide)
+
+---
+
+## Welcome
+
+Welcome to Adaptive NPC! This manual will take you from installation to advanced implementation. Whether you're creating a simple RPG shopkeeper or a complex companion system, this guide has you covered.
+
+**What you'll learn:**
+- How to install and verify the library
+- Creating your first intelligent NPC
+- Understanding the memory and pattern systems
+- Best practices for production games
 
 ---
 
 ## What is Adaptive NPC?
 
-Adaptive NPC is a Unity framework that creates NPCs (Non-Player Characters) with:
-- **Memory**: NPCs remember player actions and interactions
-- **Pattern Recognition**: NPCs notice when players repeat behaviors
-- **Contextual Responses**: NPCs respond based on their relationship with the player
-- **Persistence**: NPC memories save between game sessions
+Adaptive NPC is a Unity library that gives your NPCs:
 
-Think of it as giving your NPCs actual brains that learn and adapt to each player's unique playstyle.
+### 🧠 **Memory**
+NPCs remember what players do, building a personality profile over time.
+```
+Player gives 3 gifts → NPC thinks: "This player is generous"
+Player attacks repeatedly → NPC thinks: "This player is aggressive"
+```
+
+### 🎯 **Pattern Recognition**
+NPCs notice when players repeat behaviors and respond accordingly.
+```
+First gift: "Thank you!"
+Third gift: "You're always so generous!"
+Tenth gift: "Are you trying to buy my friendship?"
+```
+
+### 💬 **Contextual Responses**
+NPCs respond based on their relationship with the player.
+```
+New player approaches → "Hello stranger"
+Friendly player approaches → "Good to see you again, friend!"
+Aggressive player approaches → "Please, no trouble..."
+```
+
+### 💾 **Persistence**
+Memories save automatically between game sessions.
+```
+Day 1: Player helps NPC
+Day 7: Player returns → "You're the one who helped me last week!"
+```
 
 ---
 
-## System Requirements
+## Installation Walkthrough
 
-- **Unity Version**: 2021.3 LTS or newer
-- **Operating System**: Windows, Mac, or Linux
-- **RAM**: 4GB minimum
-- **Optional**: OpenAI API key for AI-powered responses (works without it too!)
+### Prerequisites
 
----
+- **Unity Version:** 2021.3.0f1 or newer
+- **Platforms:** All Unity platforms supported
+- **Dependencies:** None (OpenAI optional)
 
-## Installation Guide
+### Method 1: Package Manager (Recommended)
 
-### Step 1: Create or Open a Unity Project
-
-1. Open Unity Hub
-2. Click "New Project" or open an existing project
-3. Ensure you're using Unity 2021.3 or newer
-
-### Step 2: Install from GitHub
-
-#### Method A: Unity Package Manager (Recommended)
-
-1. In Unity, go to **Window** → **Package Manager**
-2. Click the **+** button in the top-left corner
-3. Select **"Add package from git URL..."**
-4. Enter this URL:
+1. **Open Unity Package Manager**
+   - Window → Package Manager
+   
+2. **Add from Git URL**
+   - Click the **+** button (top-left)
+   - Select "Add package from git URL"
+   
+3. **Enter Repository URL**
 ```
    https://github.com/shashankcm95/AdaptiveNPC.git
 ```
-5. Click **Add** and wait for import to complete
+   
+4. **Verify Installation**
+   - Package should appear as "Adaptive NPC" v1.0.1
+   - No compilation errors in Console
 
-#### Method B: Download and Import
+### Method 2: Manual Installation
 
-1. Go to https://github.com/shashankcm95/AdaptiveNPC
-2. Click the green **Code** button → **Download ZIP**
-3. Extract the ZIP file
-4. In Unity: **Assets** → **Import Package** → **Custom Package**
-5. Navigate to extracted folder and import
+1. **Download Release**
+   - Go to [Releases](https://github.com/shashankcm95/AdaptiveNPC/releases)
+   - Download `AdaptiveNPC_v1.0.1.unitypackage`
+   
+2. **Import Package**
+   - Assets → Import Package → Custom Package
+   - Select downloaded file
+   - Click Import
 
----
+### Verify Installation
 
-## Running Your First Demo
+Run the built-in test to ensure everything works:
 
-### Quick Demo Setup (Automatic)
+1. **Menu Bar** → AdaptiveNPC → Quick Test
+2. Look for "✅ All tests passed!" in Console
 
-1. After importing, go to Unity menu bar
-2. Click **AdaptiveNPC** → **Setup Demo Scene**
-3. Press **Play** button (▶️)
-4. You're running the demo!
-
-### Manual Demo Setup
-
-1. Navigate to: `Samples~/BasicDemo/Scenes/`
-2. Double-click **DemoScene.unity** to open it
-3. Press **Play** button (▶️)
-
-### Demo Controls
-
-Once the demo is running:
-
-| Key | Action |
-|-----|--------|
-| **WASD** or **Arrow Keys** | Move player |
-| **E** | Talk to nearby NPC |
-| **G** | Give gift to NPC |
-| **Q** | Insult NPC |
-| **R** | Recruit NPC as companion |
-| **T** | Test pattern recognition (triggers 3x) |
-| **Y** | Show NPC memory debug info |
-
-### What to Try in the Demo
-
-1. **Test Memory**: 
-   - Talk to the Merchant (green NPC)
-   - Give them a gift
-   - Talk again - they'll remember the gift!
-
-2. **Test Patterns**:
-   - Give gifts to the same NPC 3 times
-   - The NPC will comment on your generosity pattern
-
-3. **Test Relationships**:
-   - Insult the Guard (blue NPC) multiple times
-   - Notice how their responses become less friendly
-
-4. **Test Persistence**:
-   - Interact with NPCs
-   - Stop play mode
-   - Play again - NPCs remember you!
+If you see this message, you're ready to go!
 
 ---
 
-## Understanding the Framework
+## Your First NPC in 5 Minutes
 
-### Core Components
-
-#### 1. CognitiveCompanion Component
-This is the main component you add to any GameObject to make it an adaptive NPC.
+### Step 1: Create an NPC GameObject
 ```csharp
-// Simple setup
+// Create in code
 GameObject npc = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-CognitiveCompanion companion = npc.AddComponent<CognitiveCompanion>();
+npc.name = "Smart NPC";
 ```
 
-#### 2. Memory System
-NPCs remember what players do:
-- Actions (what happened)
-- Context (when/where it happened)  
-- Patterns (repeated behaviors)
-- Traits (player personality assessment)
+Or manually in Scene:
+1. GameObject → 3D Object → Capsule
+2. Rename to "Smart NPC"
 
-#### 3. Response Modes
+### Step 2: Add the Component
+```csharp
+using UnityEngine;
+using AdaptiveNPC;  // Don't forget this!
 
-| Mode | Description | Use When |
-|------|-------------|----------|
-| **Template** | Pre-written responses | No API key, want free operation |
-| **AI** | OpenAI-powered responses | Want most natural dialogue |
-| **Hybrid** | Mix of both | Want natural dialogue with lower cost |
-
-### Architecture Overview
-```
-AdaptiveNPC/
-├── Runtime/
-│   ├── Core/           # Main systems
-│   │   ├── CognitiveCompanion.cs
-│   │   ├── MemorySystem.cs
-│   │   └── PatternRecognizer.cs
-│   ├── Interfaces/     # For extensibility
-│   ├── Providers/      # Response generation
-│   └── SaveSystems/    # Persistence
-├── Samples~/           # Demo scenes
-├── Documentation~/     # Guides
-└── Tests/             # Unit tests
-```
-
----
-
-## Setting Up OpenAI (Optional)
-
-The framework works without AI, but adding OpenAI makes responses more natural.
-
-### Step 1: Get an API Key
-
-1. Go to https://platform.openai.com
-2. Sign up or log in
-3. Navigate to API Keys
-4. Click "Create new secret key"
-5. Copy the key (starts with `sk-`)
-
-### Step 2: Add Key to Unity
-
-Choose one method:
-
-#### Option A: Environment Variable (Recommended)
-```bash
-# Windows (Command Prompt)
-setx OPENAI_API_KEY "sk-your-key-here"
-
-# Mac/Linux (Terminal)
-export OPENAI_API_KEY="sk-your-key-here"
-```
-
-#### Option B: Unity Config File
-1. Create folder: `Assets/StreamingAssets/`
-2. Create file: `adaptivenpc_config.json`
-3. Add:
-```json
+public class MyFirstNPC : MonoBehaviour
 {
-    "openai_api_key": "sk-your-key-here"
+    void Start()
+    {
+        // Add the AI component
+        var ai = gameObject.AddComponent<CognitiveCompanion>();
+        
+        // That's it! Your NPC now has memory and pattern recognition
+    }
 }
 ```
 
-#### Option C: In Code
+Or manually:
+1. Select your NPC
+2. Add Component → Cognitive Companion
+
+### Step 3: Make it Interactive
 ```csharp
-PlayerPrefs.SetString("AdaptiveNPC_OpenAI_Key", "sk-your-key-here");
+public class MyFirstNPC : MonoBehaviour
+{
+    private CognitiveCompanion ai;
+    
+    void Start()
+    {
+        ai = gameObject.AddComponent<CognitiveCompanion>();
+        
+        // Listen for responses
+        ai.OnResponse += (response) => {
+            Debug.Log($"NPC says: {response}");
+        };
+    }
+    
+    // Call this when player interacts
+    public void OnPlayerInteraction(string action)
+    {
+        ai.ObserveAction(action, "interaction");
+    }
+}
 ```
 
-### Cost Estimates
+### Step 4: Test It
+```csharp
+void Update()
+{
+    // Test with keyboard
+    if (Input.GetKeyDown(KeyCode.G))
+    {
+        ai.ObserveAction("gave gift", "test");
+    }
+    
+    if (Input.GetKeyDown(KeyCode.T))
+    {
+        ai.ObserveAction("talked to", "test");
+    }
+}
+```
 
-- **Hybrid Mode**: ~$0.02 per hour of gameplay
-- **AI Mode**: ~$0.06 per hour of gameplay
-- **Template Mode**: Free
+### Step 5: See Results
+
+Press G three times, and watch the Console:
+1. First: "Thank you for the gift!"
+2. Second: "Another gift? How kind!"
+3. Third: "⚡ Pattern Recognized: gift x3" + "You're always so generous!"
+
+**Congratulations!** You've created your first adaptive NPC!
 
 ---
 
-## Troubleshooting
+## How It Works
 
-### Issue: "No NPCs responding"
+### The Core Loop
+```mermaid
+Player Action → ObserveAction() → Memory Update → Pattern Check → Generate Response
+```
 
-**Solution**: 
-- Check Console for errors (Window → General → Console)
-- Ensure CognitiveCompanion component is added to NPCs
-- Verify Response Mode is set in Inspector
+### Memory System
 
-### Issue: "AI responses not working"
+Each NPC maintains memories about the player:
+```csharp
+// Internal memory structure
+{
+    "actions": ["gave gift", "talked", "gave gift", "helped"],
+    "traits": {
+        "generous": 0.7,
+        "friendly": 0.5,
+        "helpful": 0.3
+    },
+    "encounters": 4
+}
+```
 
-**Solution**:
-- Verify API key is correctly set
-- Check you have credits in OpenAI account
-- Try Template mode to confirm base system works
+### Pattern Recognition
 
-### Issue: "NPCs don't remember between sessions"
+The system detects repeated behaviors:
 
-**Solution**:
-- Enable "Persist Memory" in Inspector
-- Check PlayerPrefs aren't being cleared
-- Verify save system has write permissions
+| Repetitions | Significance | NPC Reaction |
+|------------|--------------|--------------|
+| 1-2 | Normal | Standard response |
+| 3-4 | Pattern emerging | Acknowledgment |
+| 5+ | Strong pattern | Special dialogue |
 
-### Issue: "Can't move player in demo"
+### Response Generation
 
-**Solution**:
-- Click inside Game view to focus it
-- Ensure Game view is selected, not Scene view
-- Check no error messages in Console
+Three modes available:
+```csharp
+// In Inspector or code
+companion.responseMode = ResponseMode.Template;  // Free, instant
+companion.responseMode = ResponseMode.AI;        // Natural, costs API
+companion.responseMode = ResponseMode.Hybrid;    // Best of both (default)
+```
 
-### Common Console Messages
+---
 
-| Message | Meaning | Action |
-|---------|---------|--------|
-| `[AdaptiveNPC] OpenAI API key not configured` | No API key found | Add API key or use Template mode |
-| `[CognitiveCompanion] Response generation failed` | API error | Check API key and internet connection |
-| `Pattern Recognized: gift (x3)` | Pattern detected successfully | Working as intended! |
+## Testing & Verification
+
+### Automated Test Scene
+
+Create a full test environment:
+
+1. **Menu** → AdaptiveNPC → Create Test Scene
+2. Press **Play**
+3. Watch automated interactions
+
+### Manual Testing Checklist
+
+- [ ] Component adds without errors
+- [ ] ObserveAction processes immediately
+- [ ] Patterns trigger at 3 repetitions
+- [ ] Memory persists after stopping Play mode
+- [ ] Responses appear in Console
+
+### Unit Tests
+
+Run the test suite:
+
+1. Window → General → Test Runner
+2. Click "Run All"
+3. All tests should pass
+
+---
+
+## Architecture Overview
+
+### Component Structure
+```
+CognitiveCompanion (Main Component)
+├── MemorySystem (Stores interactions)
+├── PatternRecognizer (Detects behaviors)
+├── ResponseProvider (Generates dialogue)
+│   ├── TemplateProvider
+│   ├── OpenAIProvider
+│   └── HybridProvider
+└── SaveProvider (Persistence)
+    └── PlayerPrefsSaveProvider
+```
+
+### Key Interfaces
+```csharp
+// Extend functionality by implementing these
+public interface IMemorySystem { }
+public interface IPatternRecognizer { }
+public interface IResponseProvider { }
+public interface ISaveProvider { }
+```
+
+### Data Flow
+```csharp
+// 1. Player does something
+playerController.Attack(enemy);
+
+// 2. NPC observes
+companion.ObserveAction("attacked enemy", "combat");
+
+// 3. Memory updates
+memory.RecordAction("attacked enemy", "combat");
+// Updates traits: aggressive +0.1
+
+// 4. Pattern check
+pattern = patterns.AnalyzeAction("attacked enemy");
+// Returns: Pattern { Action: "attack", Count: 3, IsSignificant: true }
+
+// 5. Response generation
+if (pattern.IsSignificant)
+    response = "You're quite aggressive today!";
+```
+
+---
+
+## Common Integration Patterns
+
+### Pattern 1: Dialogue System Integration
+```csharp
+using PixelCrushers.DialogueSystem;
+
+public class DialogueIntegration : MonoBehaviour
+{
+    private CognitiveCompanion ai;
+    
+    void Start()
+    {
+        ai = GetComponent<CognitiveCompanion>();
+        ai.OnResponse += ShowInDialogueUI;
+    }
+    
+    void ShowInDialogueUI(string response)
+    {
+        DialogueManager.ShowAlert(response);
+    }
+}
+```
+
+### Pattern 2: Quest System
+```csharp
+public class QuestNPC : MonoBehaviour
+{
+    private CognitiveCompanion ai;
+    
+    public Quest GetAppropriateQuest()
+    {
+        string relationship = ai.GetRelationshipSummary();
+        
+        if (relationship.Contains("helpful"))
+            return hardQuest;  // Trust player with difficult quest
+        else
+            return easyQuest;   // Start with simple quest
+    }
+}
+```
+
+### Pattern 3: Combat Adaptation
+```csharp
+public class AdaptiveEnemy : MonoBehaviour
+{
+    private CognitiveCompanion ai;
+    private CombatAI combat;
+    
+    void Start()
+    {
+        ai = GetComponent<CognitiveCompanion>();
+        ai.OnPatternRecognized += AdaptStrategy;
+    }
+    
+    void AdaptStrategy(string pattern, int count)
+    {
+        switch(pattern)
+        {
+            case "dodge":
+                combat.UseAOEAttacks();
+                break;
+            case "block":
+                combat.UseUnblockableAttacks();
+                break;
+            case "ranged":
+                combat.CloseDistance();
+                break;
+        }
+    }
+}
+```
+
+---
+
+## Performance & Optimization
+
+### Memory Usage
+
+| NPCs | Memory | Save Size |
+|------|--------|-----------|
+| 1 | ~1KB | ~500B |
+| 10 | ~10KB | ~5KB |
+| 100 | ~100KB | ~50KB |
+
+### CPU Performance
+
+| Operation | Time |
+|-----------|------|
+| ObserveAction | <0.1ms |
+| Pattern Check | <0.05ms |
+| Template Response | <0.01ms |
+| AI Response | 500-2000ms |
+
+### Optimization Tips
+
+1. **Use Response Frequency**
+```csharp
+   companion.responseFrequency = 0.3f; // Only respond 30% of the time
+```
+
+2. **Limit Memory**
+```csharp
+   companion.maxMemories = 20; // Reduce for mobile
+```
+
+3. **Use Templates for Background NPCs**
+```csharp
+   // Main NPCs: Hybrid mode
+   importantNPC.responseMode = ResponseMode.Hybrid;
+   
+   // Background NPCs: Template only
+   backgroundNPC.responseMode = ResponseMode.Template;
+```
+
+---
+
+## Troubleshooting Guide
+
+### Common Issues & Solutions
+
+#### ❌ "Component not found"
+```csharp
+// Wrong
+using CognitiveCompanion;  
+
+// Correct
+using AdaptiveNPC;
+```
+
+#### ❌ "No responses from NPC"
+1. Check Console for errors
+2. Verify component is enabled
+3. Try Template mode first (doesn't need API key)
+
+#### ❌ "Memory not persisting"
+1. Check "Persist Memory" is enabled in Inspector
+2. Verify PlayerPrefs has write permission
+3. Don't clear PlayerPrefs in your code
+
+#### ❌ "AI responses not working"
+```csharp
+// Debug API configuration
+void CheckAISetup()
+{
+    string key = PlayerPrefs.GetString("AdaptiveNPC_OpenAI_Key", "");
+    Debug.Log($"API Key configured: {!string.IsNullOrEmpty(key)}");
+    
+    string envKey = System.Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+    Debug.Log($"Environment key exists: {!string.IsNullOrEmpty(envKey)}");
+}
+```
+
+#### ❌ "Pattern not triggering"
+```csharp
+// Patterns need exact action category match
+companion.ObserveAction("gave a gift", "");     // ✓ Triggers "gift" pattern
+companion.ObserveAction("gifted item", "");     // ✓ Triggers "gift" pattern  
+companion.ObserveAction("presented offering", ""); // ✗ Won't trigger pattern
+```
+
+### Debug Mode
+
+Enable verbose logging:
+```csharp
+public class DebugHelper : MonoBehaviour
+{
+    private CognitiveCompanion ai;
+    
+    void Start()
+    {
+        ai = GetComponent<CognitiveCompanion>();
+        
+        // Log everything
+        ai.OnResponse += (r) => Debug.Log($"[RESPONSE] {r}");
+        ai.OnPatternRecognized += (p, c) => Debug.Log($"[PATTERN] {p} x{c}");
+        
+        // Check memory
+        InvokeRepeating(nameof(LogMemory), 5f, 5f);
+    }
+    
+    void LogMemory()
+    {
+        Debug.Log($"[MEMORY] {ai.GetRelationshipSummary()}");
+    }
+}
+```
+
+---
+
+## Getting Help
+
+### Resources
+
+- **Documentation:** [GitHub Wiki](https://github.com/shashankcm95/AdaptiveNPC/wiki)
+- **Issues:** [GitHub Issues](https://github.com/shashankcm95/AdaptiveNPC/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/shashankcm95/AdaptiveNPC/discussions)
+
+### Quick Support Checklist
+
+Before reporting an issue:
+
+1. [ ] Using Unity 2021.3.0f1 or newer?
+2. [ ] Ran AdaptiveNPC → Quick Test?
+3. [ ] Checked Console for errors?
+4. [ ] Tried Template mode without AI?
+5. [ ] Verified component is on GameObject?
 
 ---
 
 ## Next Steps
 
-1. **Read the Documentation**:
-   - [Getting Started Guide](Documentation~/GettingStarted.md)
-   - [API Reference](Documentation~/APIReference.md)
-   - [Integration Guide](Documentation~/Integration.md)
+✅ **Basic:** You can now add adaptive NPCs to your game  
+✅ **Intermediate:** You understand patterns and memory  
+✅ **Advanced:** You can extend with custom providers
 
-2. **Try the Examples**:
-   - Check `Documentation~/Examples.md` for code samples
-   - Modify the demo scene to experiment
+**Recommended Learning Path:**
 
-3. **Build Your Own**:
-   - Add CognitiveCompanion to your NPCs
-   - Customize personality and response modes
-   - Create unique NPC behaviors
+1. Create a simple NPC that remembers the player
+2. Add pattern recognition for 3 different actions
+3. Integrate with your dialogue system
+4. Implement custom save provider
+5. Create adaptive combat AI
 
 ---
 
-## Support
+**Thank you for choosing Adaptive NPC!**
 
-- **Issues**: https://github.com/shashankcm95/AdaptiveNPC/issues
-- **Discussions**: https://github.com/shashankcm95/AdaptiveNPC/discussions
-- **Documentation**: https://github.com/shashankcm95/AdaptiveNPC/wiki
+*Making NPCs memorable, one interaction at a time.* 🎮
 
 ---
 
-## Quick Reference Card
-```csharp
-// Basic Setup
-using AdaptiveNPC;
-
-// Add to NPC
-var companion = npc.AddComponent<CognitiveCompanion>();
-
-// Track player actions
-companion.ObserveAction("helped villager", "quest");
-
-// Listen for responses
-companion.OnResponse += (response) => {
-    ShowDialogue(response);
-};
-
-// Check relationship
-string summary = companion.GetRelationshipSummary();
-```
-
----
-
-*Thank you for using Adaptive NPC! Your NPCs will never be the same.*
+**Manual Version:** 1.0.1  
+**Last Updated:** October 2025  
+**Author:** Shashank CM
