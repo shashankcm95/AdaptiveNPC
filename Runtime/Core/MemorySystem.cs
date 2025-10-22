@@ -5,113 +5,260 @@ using UnityEngine;
 
 namespace AdaptiveNPC
 {
+    /// <summary>
+    /// Manages NPC memory of player interactions and derives player traits
+    /// </summary>
     [Serializable]
     public class MemorySystem : IMemorySystem
     {
+        #region Nested Classes
+        
         [Serializable]
-        private class MemoryEntry
+        public class MemoryEntry
         {
             public string action;
             public string context;
             public long timestamp;
             public float importance;
             
-            public MemoryEntry(string action, string context)
+            public MemoryEntry(string action, string context, float importance)
             {
                 this.action = action;
                 this.context = context;
                 this.timestamp = DateTimeOffset.Now.ToUnixTimeSeconds();
-                this.importance = CalculateImportance(action);
-            }
-            
-            private static float CalculateImportance(string action)
-            {
-                if (action.Contains("save") || action.Contains("kill")) return 0.9f;
-                if (action.Contains("gift") || action.Contains("insult")) return 0.7f;
-                if (action.Contains("help") || action.Contains("attack")) return 0.8f;
-                if (action.Contains("talk")) return 0.3f;
-                return 0.5f;
+                this.importance = importance;
             }
         }
         
-        private List<MemoryEntry> memories;
-        private Dictionary<string, float> playerTraits;
-        private readonly int maxMemories;
+        [Serializable]
+        public class PlayerTraits
+        {
+            public Dictionary<string, float> traits = new Dictionary<string, float>();
+            
+            public string GetDominantTrait()
+            {
+                if (traits.Count == 0) return "neutral";
+                return traits.OrderByDescending(t => t.Value).First().Key;
+            }
+        }
+        
+        #endregion
+        
+        #region Fields
+        
+        [SerializeField] private List<MemoryEntry> memories;
+        [SerializeField] private PlayerTraits playerTraits;
+        [SerializeField] private int maxMemories;
+        private readonly Dictionary<string, string[]> actionTraitMap;
+        
+        #endregion
+        
+        #region Constructor
         
         public MemorySystem(int maxMemories = 50)
         {
             this.maxMemories = maxMemories;
-            memories = new List<MemoryEntry>();
-            playerTraits = new Dictionary<string, float>();
+            this.memories = new List<MemoryEntry>();
+            this.playerTraits = new PlayerTraits();
+            
+            // Map actions to traits
+            actionTraitMap = new Dictionary<string, string[]>
+            {
+                { "gift", new[] { "generous", "friendly" } },
+                { "help", new[] { "helpful", "kind" } },
+                { "attack", new[] { "aggressive", "hostile" } },
+                { "insult", new[] { "rude", "mean" } },
+                { "steal", new[] { "dishonest", "sneaky" } },
+                { "talk", new[] { "social", "talkative" } },
+                { "trade", new[] { "merchant", "trader" } },
+                { "quest", new[] { "adventurous", "helpful" } }
+            };
         }
+        
+        #endregion
+        
+        #region IMemorySystem Implementation
         
         public void RecordAction(string action, string context)
         {
-            memories.Add(new MemoryEntry(action, context));
+            // Calculate importance
+            float importance = CalculateImportance(action, context);
             
-            // Maintain memory limit
+            // Add memory
+            memories.Add(new MemoryEntry(action, context, importance));
+            
+            // Maintain memory limit - keep important memories
             if (memories.Count > maxMemories)
             {
-                memories.RemoveAt(0);
+                memories = memories
+                    .OrderByDescending(m => m.importance)
+                    .ThenByDescending(m => m.timestamp)
+                    .Take(maxMemories)
+                    .ToList();
             }
             
+            // Update traits
             UpdatePlayerTraits(action);
-        }
-        
-        private void UpdatePlayerTraits(string action)
-        {
-            string actionLower = action.ToLower();
-            
-            if (actionLower.Contains("gift") || actionLower.Contains("help"))
-                ModifyTrait("generous", 0.1f);
-                
-            if (actionLower.Contains("attack") || actionLower.Contains("insult"))
-                ModifyTrait("aggressive", 0.15f);
-                
-            if (actionLower.Contains("talk") || actionLower.Contains("chat"))
-                ModifyTrait("social", 0.1f);
-                
-            if (actionLower.Contains("steal") || actionLower.Contains("sneak"))
-                ModifyTrait("sneaky", 0.2f);
-        }
-        
-        private void ModifyTrait(string trait, float delta)
-        {
-            if (!playerTraits.ContainsKey(trait))
-                playerTraits[trait] = 0;
-                
-            playerTraits[trait] = Mathf.Clamp01(playerTraits[trait] + delta);
         }
         
         public string GetSummary()
         {
             if (memories.Count == 0)
-                return "First time meeting";
-                
-            var topTraits = playerTraits
-                .Where(t => t.Value > 0.3f)
-                .OrderByDescending(t => t.Value)
-                .Take(3)
-                .Select(t => $"{t.Key} ({t.Value:P0})");
-                
-            return $"Interactions: {memories.Count}, Traits: {string.Join(", ", topTraits)}";
+                return "First encounter";
+            
+            // Build summary
+            var recentActions = memories
+                .OrderByDescending(m => m.timestamp)
+                .Take(5)
+                .Select(m => m.action);
+            
+            var dominantTrait = playerTraits.GetDominantTrait();
+            var traitValue = playerTraits.traits.ContainsKey(dominantTrait) 
+                ? playerTraits.traits[dominantTrait] 
+                : 0;
+            
+            return $"Encounters: {memories.Count}, " +
+                   $"Trait: {dominantTrait} ({traitValue:P0}), " +
+                   $"Recent: {string.Join(", ", recentActions.Take(3))}";
         }
         
         public void Clear()
         {
             memories.Clear();
-            playerTraits.Clear();
+            playerTraits.traits.Clear();
         }
         
         public string Serialize()
         {
-            return JsonUtility.ToJson(this);
+            var data = new SerializableMemoryData
+            {
+                memories = memories,
+                traits = playerTraits.traits.ToList()
+            };
+            return JsonUtility.ToJson(data, true);
         }
         
         public void Deserialize(string data)
         {
             if (string.IsNullOrEmpty(data)) return;
-            JsonUtility.FromJsonOverwrite(data, this);
+            
+            try
+            {
+                var loadedData = JsonUtility.FromJson<SerializableMemoryData>(data);
+                memories = loadedData.memories ?? new List<MemoryEntry>();
+                
+                playerTraits.traits.Clear();
+                if (loadedData.traits != null)
+                {
+                    foreach (var trait in loadedData.traits)
+                    {
+                        playerTraits.traits[trait.Key] = trait.Value;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[MemorySystem] Failed to deserialize: {e.Message}");
+            }
         }
+        
+        #endregion
+        
+        #region Private Methods
+        
+        private float CalculateImportance(string action, string context)
+        {
+            float baseImportance = 0.5f;
+            
+            // Critical actions
+            if (action.Contains("save") || action.Contains("rescue"))
+                return 1.0f;
+            if (action.Contains("kill") || action.Contains("murder"))
+                return 0.95f;
+            
+            // Important interactions
+            if (action.Contains("gift") || action.Contains("help"))
+                baseImportance = 0.7f;
+            if (action.Contains("insult") || action.Contains("attack"))
+                baseImportance = 0.8f;
+            
+            // Context modifiers
+            if (context.Contains("quest") || context.Contains("important"))
+                baseImportance += 0.2f;
+            
+            return Mathf.Clamp01(baseImportance);
+        }
+        
+        private void UpdatePlayerTraits(string action)
+        {
+            string actionKey = ExtractActionKey(action);
+            
+            if (actionTraitMap.ContainsKey(actionKey))
+            {
+                foreach (var trait in actionTraitMap[actionKey])
+                {
+                    if (!playerTraits.traits.ContainsKey(trait))
+                        playerTraits.traits[trait] = 0;
+                    
+                    // Increase trait with diminishing returns
+                    float current = playerTraits.traits[trait];
+                    float increase = 0.1f * (1f - current * 0.5f);
+                    playerTraits.traits[trait] = Mathf.Clamp01(current + increase);
+                }
+            }
+            
+            // Decay opposite traits
+            DecayOppositeTraits(actionKey);
+        }
+        
+        private void DecayOppositeTraits(string actionKey)
+        {
+            var opposites = new Dictionary<string, string[]>
+            {
+                { "generous", new[] { "greedy", "selfish" } },
+                { "aggressive", new[] { "peaceful", "calm" } },
+                { "helpful", new[] { "selfish", "indifferent" } }
+            };
+            
+            foreach (var trait in playerTraits.traits.Keys.ToList())
+            {
+                if (opposites.ContainsKey(trait))
+                {
+                    foreach (var opposite in opposites[trait])
+                    {
+                        if (playerTraits.traits.ContainsKey(opposite))
+                        {
+                            playerTraits.traits[opposite] *= 0.9f;
+                        }
+                    }
+                }
+            }
+        }
+        
+        private string ExtractActionKey(string action)
+        {
+            string lower = action.ToLower();
+            
+            foreach (var key in actionTraitMap.Keys)
+            {
+                if (lower.Contains(key))
+                    return key;
+            }
+            
+            return "misc";
+        }
+        
+        #endregion
+        
+        #region Helper Classes
+        
+        [Serializable]
+        private class SerializableMemoryData
+        {
+            public List<MemoryEntry> memories;
+            public List<KeyValuePair<string, float>> traits;
+        }
+        
+        #endregion
     }
 }
