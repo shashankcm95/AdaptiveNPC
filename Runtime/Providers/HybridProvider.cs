@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading.Tasks;  // ADD THIS
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace AdaptiveNPC
 {
@@ -12,65 +11,67 @@ namespace AdaptiveNPC
         private readonly float aiThreshold;
         private readonly TemplateProvider templateProvider;
         private readonly OpenAIProvider aiProvider;
-        private Queue<string> recentResponses;
+        private readonly Queue<string> recentResponses;
         
-        public HybridProvider(string personality, float aiThreshold = 0.7f)
+        public HybridProvider(string personality = "friendly", float aiThreshold = 0.7f)
         {
             this.personality = personality;
-            this.aiThreshold = aiThreshold;
+            this.aiThreshold = Mathf.Clamp01(aiThreshold);
             this.templateProvider = new TemplateProvider();
-            this.aiProvider = new OpenAIProvider(personality);
+            this.aiProvider = new OpenAIProvider(personality);  // NOW THIS WORKS!
             this.recentResponses = new Queue<string>(5);
         }
         
         public async Task<string> GenerateResponse(ResponseRequest request)
         {
-            // Determine if we should use AI
-            bool useAI = ShouldUseAI(request);
-            
-            string response;
-            
-            if (useAI && aiProvider.IsConfigured())
+            try
             {
-                try
+                bool useAI = ShouldUseAI(request);
+                string response = null;
+                
+                if (useAI && aiProvider.IsConfigured())
                 {
-                    response = await aiProvider.GenerateResponse(request);
+                    try
+                    {
+                        response = await aiProvider.GenerateResponse(request);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning($"[HybridProvider] AI failed, using template: {e.Message}");
+                    }
                 }
-                catch (Exception e)
+                
+                // Fallback to template if AI failed or not configured
+                if (string.IsNullOrEmpty(response))
                 {
-                    Debug.LogWarning($"AI generation failed, falling back to template: {e.Message}");
                     response = await templateProvider.GenerateResponse(request);
                 }
+                
+                // Track recent responses
+                if (!string.IsNullOrEmpty(response))
+                {
+                    if (recentResponses.Count >= 5)
+                        recentResponses.Dequeue();
+                    recentResponses.Enqueue(response);
+                }
+                
+                return response;
             }
-            else
+            catch (Exception e)
             {
-                response = await templateProvider.GenerateResponse(request);
+                Debug.LogError($"[HybridProvider] Critical error: {e.Message}");
+                return "..."; // Silent fallback
             }
-            
-            // Track recent responses to avoid repetition
-            if (!recentResponses.Contains(response))
-            {
-                recentResponses.Enqueue(response);
-                if (recentResponses.Count > 5)
-                    recentResponses.Dequeue();
-            }
-            else
-            {
-                // Get alternative if we've said this recently
-                response = await templateProvider.GetAlternativeResponse(request);
-            }
-            
-            return response;
         }
         
         private bool ShouldUseAI(ResponseRequest request)
         {
-            // Important events always use AI if available
-            if (request.Pattern != null && (request.Pattern.Count == 3 || request.Pattern.Count == 10))
+            // Important patterns always use AI
+            if (request.Pattern != null && request.Pattern.IsSignificant)
                 return true;
-            
+                
             // Random chance based on threshold
-            return Random.value < aiThreshold;
+            return UnityEngine.Random.value < aiThreshold;
         }
     }
 }

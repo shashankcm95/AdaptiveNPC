@@ -1,29 +1,30 @@
 {
-  "name": "com.shashankcm.adaptivenpc",
-  "version": "1.0.0",
-  "displayName": "Adaptive NPC - Cognitive Companions",
-  "description": "AI-powered NPCs with memory, pattern recognition, and contextual responses for Unity",
-  "unity": "2021.3",
-  "documentationUrl": "https://github.com/shashankcm95/AdaptiveNPC/wiki",
-  "changelogUrl": "https://github.com/shashankcm95/AdaptiveNPC/blob/main/CHANGELOG.md",
-  "licensesUrl": "https://github.com/shashankcm95/AdaptiveNPC/blob/main/LICENSE",
-  "keywords": [
-    "ai",
-    "npc",
-    "companion",
-    "memory",
-    "gpt",
-    "cognitive"
-  ],
-  "author": {
-    "name": "Shashank CM",
-    "url": "https://github.com/shashankcm95"
-  },
-  "samples": [
-    {
-      "displayName": "Basic Companion Demo",
-      "description": "Simple scene with one AI companion",
-      "path": "Samples~/BasicDemo"
-    }
-  ]
+    "name": "com.shashankcm.adaptivenpc",
+    "version": "1.0.1",
+    "displayName": "Adaptive NPC - AI Companions",
+    "description": "AI-powered NPCs with memory and pattern recognition for Unity",
+    "unity": "2021.3.0f1",
+    "documentationUrl": "https://github.com/shashankcm95/AdaptiveNPC/wiki",
+    "changelogUrl": "https://github.com/shashankcm95/AdaptiveNPC/blob/main/CHANGELOG.md",
+    "licensesUrl": "https://github.com/shashankcm95/AdaptiveNPC/blob/main/LICENSE",
+    "dependencies": {},
+    "keywords": [
+        "ai",
+        "npc",
+        "companion",
+        "memory",
+        "pattern-recognition"
+    ],
+    "author": {
+        "name": "Shashank CM",
+        "email": "contact@shashankcm.com",
+        "url": "https://github.com/shashankcm95"
+    },
+    "samples": [
+        {
+            "displayName": "Quick Start Demo",
+            "description": "Basic setup with test NPCs",
+            "path": "Samples~/BasicDemo"
+        }
+    ]
 }
