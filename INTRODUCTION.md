@@ -1,7 +1,7 @@
 # Adaptive NPC - Complete Developer Manual
 
 **Version:** 1.0.1  
-**Last Updated:** January 2025  
+**Last Updated:** October 2025  
 **Reading Time:** 10 minutes
 
 ---
