@@ -13,5 +13,6 @@ namespace AdaptiveNPC
         public string Action { get; set; }
         public int Count { get; set; }
         public float Weight { get; set; }
+	public bool IsSignificant { get; set; }
     }
 }
